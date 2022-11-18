@@ -1,3 +1,4 @@
+import time
 import pygame
 import json
 import threading
@@ -14,6 +15,9 @@ class GameState:
     current_question = ""
     in_second_loop = False
     reveal_all = False
+    reveal_right = False
+    reveal_left = False
+    timer_started = False
     in_final_question = False
     correct_answers = 0
     current_team = RedTeam
@@ -51,6 +55,7 @@ def gameLoop():
                     print("The current team has " + str(game.current_team.points) + " points")
                     game.correct_answers += 1
             
+            # Second game loop, triggers when the first team get 
             if(game.in_second_loop == True):
                 if(game.current_team == RedTeam):
                     game.current_team = BlueTeam
@@ -68,10 +73,55 @@ def gameLoop():
             game.reveal_all = True
             
             input("Proceed? ")
+            # Cleanup
             RedTeam.mistakes = 0
             BlueTeam.mistakes = 0
             game.in_second_loop = 0
             game.correct_answers = 0
             game.reveal_all = False
             
+        if question["question_type"] == "final":
+            print("Detected final question.")
+            game.current_id = question["question_id"]
+            game.current_question = question["question"]
+            game.in_final_question = True
+            print(game.current_id)
+            print(game.current_question)
+            
+            starting = input("Who starts? ")
+            if(starting == "Red"):
+                game.current_team = RedTeam
+            elif(starting == "Blue"):
+                game.current_team = BlueTeam
+            
+            starttime = time.time()
+            currtime = time.time()
+            iterator = 0
+            while(currtime - starttime < 15 and iterator < len(question["questions"])):
+                print(question["questions"][iterator])
+                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
+                if(answer != 0):
+                    game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                    print("The current team has " + str(game.current_team.points) + " points")
+                iterator += 1
+                currtime = time.time()
+            
+            input("Continue? ")
+            
+            if(game.current_team == RedTeam):
+                game.current_team = BlueTeam
+            elif(game.current_team == BlueTeam):
+                game.current_team = RedTeam
+            
+            starttime = time.time()
+            currtime = time.time()
+            iterator = 0
+            while(currtime - starttime < 15 and iterator < len(question["questions"])):
+                print(question["questions"][iterator])
+                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
+                if(answer != 0):
+                    game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                    print("The current team has " + str(game.current_team.points) + " points")
+                iterator += 1
+                currtime = time.time()
 gameLoop()
