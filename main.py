@@ -7,6 +7,8 @@ import threading
 class Team:
     points = 0
     mistakes = 0
+    def __init__(self) -> None:
+        self.name = input("Tame name?: ")
     
 RedTeam = Team()
 BlueTeam = Team()
@@ -26,6 +28,7 @@ class GameState:
     prize_pool = 0
     answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
     current_question_answers = 0
+    over = False
     
 game = GameState()
 
@@ -122,15 +125,15 @@ def gameLoop():
         if question["question_type"] == "final":
             print("Detected final question.")
             game.current_id = question["question_id"]
+            game.current_question = question
             game.current_question_text = question["question"]
             game.in_final_question = True
             print(game.current_id)
             print(game.current_question_text)
             
-            starting = input("Who starts? ")
-            if(starting == "Red"):
+            if(RedTeam.points > BlueTeam.points):
                 game.current_team = RedTeam
-            elif(starting == "Blue"):
+            else:
                 game.current_team = BlueTeam
             
             starttime = time.time()
@@ -141,28 +144,35 @@ def gameLoop():
                 answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
                 if(answer != 0):
                     game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                    game.prize_pool += (question["answers"][iterator][answer-1]["points"])
                     print("The current team has " + str(game.current_team.points) + " points")
                 iterator += 1
                 currtime = time.time()
             
             input("Continue? ")
             
-            if(game.current_team == RedTeam):
-                game.current_team = BlueTeam
-            elif(game.current_team == BlueTeam):
-                game.current_team = RedTeam
-            
             starttime = time.time()
             currtime = time.time()
             iterator = 0
-            while(currtime - starttime < 15 and iterator < len(question["questions"])):
+            while(currtime - starttime < 20 and iterator < len(question["questions"])):
                 print(question["questions"][iterator])
-                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
+                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect. "))
                 if(answer != 0):
                     game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                    game.prize_pool += (question["answers"][iterator][answer-1]["points"])
                     print("The current team has " + str(game.current_team.points) + " points")
                 iterator += 1
                 currtime = time.time()
+                
+            if(game.prize_pool < 100):
+                print(f"The {game.current_team.name} lost the final round!")
+                game.current_team.point -= game.prize_pool
+                print(game.current_team.points)
+                game.over = True
+            else:
+                print(f"The {game.current_team.name} won the final round!")
+                print(game.current_team.points)
+                game.over = True
                 
 threading.Thread(target=gameLoop, daemon=True).start()
 
@@ -184,7 +194,10 @@ while 1:
                 
     Window.screen.fill((0, 0, 0))
     
-    if(game.in_final_question == False):
+    if(game.over == True):
+        print("game over lul")
+        sys.exit()
+    elif(game.in_final_question == False):
         text_question = default_font.render(game.current_question_text, True, (255, 255, 0))
         Window.screen.blit(text_question, ((Window.windowWidth/2 - text_question.get_rect().width/2), 100), text_question.get_rect())
         
@@ -224,5 +237,6 @@ while 1:
             else:
                 points =  default_font.render("- -", True, (255, 255, 0))
                 Window.screen.blit(points, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 300 + x*60), points.get_rect())
-    
+    elif(game.in_final_question == True):
+        print("final question stub")
     pygame.display.flip()
