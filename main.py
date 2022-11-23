@@ -198,14 +198,31 @@ while 1:
         Window.screen.blit(text_sum_title, (Window.windowWidth/2 + text_sum_title.get_rect().width, 860), text_sum_title.get_rect())
         Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 860), text_sum.get_rect())
         
+        for x in range(RedTeam.mistakes):
+            mistake_font = pygame.font.Font("dot_matrix/DOTMATRI.TTF", 212)
+            mistake = mistake_font.render("X", True, (255, 255, 0))
+            Window.screen.blit(mistake, (20, 100 + x * 200), mistake.get_rect())
+        
+        for x in range(BlueTeam.mistakes):
+            mistake_font = pygame.font.Font("dot_matrix/DOTMATRI.TTF", 212)
+            mistake = mistake_font.render("X", True, (255, 255, 0))
+            Window.screen.blit(mistake, (Window.windowWidth - 20 - mistake.get_rect().width, 100 + x * 200), mistake.get_rect())
+        
         for x in range(game.current_question_answers):
             answer_number = default_font.render(str(x+1), True, (255, 255, 0))
-            Window.screen.blit(answer_number, (400, 400 + x*60), answer_number.get_rect())
+            Window.screen.blit(answer_number, (400, 300 + x*60), answer_number.get_rect())
             if(game.answers_revealed[x] == True):
                 answer =  default_font.render(game.current_question["answers"][x]["answer"], True, (255, 255, 0))
-                Window.screen.blit(answer, (500, 400 + x*60), answer.get_rect())
+                Window.screen.blit(answer, (500, 300 + x*60), answer.get_rect())
             else:
                 answer =  default_font.render("- - - - -", True, (255, 255, 0))
-                Window.screen.blit(answer, (500, 400 + x*60), answer.get_rect())
+                Window.screen.blit(answer, (500, 300 + x*60), answer.get_rect())
+                
+            if(game.answers_revealed[x] == True):
+                points =  default_font.render(str(game.current_question["answers"][x]["points"]), True, (255, 255, 0))
+                Window.screen.blit(points, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 300 + x*60), points.get_rect())
+            else:
+                points =  default_font.render("- -", True, (255, 255, 0))
+                Window.screen.blit(points, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 300 + x*60), points.get_rect())
     
     pygame.display.flip()
