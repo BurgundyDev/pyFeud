@@ -139,14 +139,24 @@ def gameLoop():
             starttime = time.time()
             currtime = time.time()
             iterator = 0
-            while(currtime - starttime < 15 and iterator < len(question["questions"])):
-                print(question["questions"][iterator])
-                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
-                if(answer != 0):
-                    game.current_team.points += (question["answers"][iterator][answer-1]["points"])
-                    game.prize_pool += (question["answers"][iterator][answer-1]["points"])
-                    print("The current team has " + str(game.current_team.points) + " points")
+            completed = []
+            while(currtime - starttime < 15 and len(completed) != len(question["questions"])):
+                if(iterator not in completed):
+                    print(question["questions"][iterator])
+                    answer = input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. ")
+                    print(answer)
+                    if(answer == ''):
+                        print("Question passed")
+                    else:
+                        completed.append(iterator)
+                        answer = int(answer)
+                        if(answer != 0):
+                            game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                            game.prize_pool += (question["answers"][iterator][answer-1]["points"])
+                            print("The current team has " + str(game.current_team.points) + " points")
                 iterator += 1
+                if(iterator == len(question["questions"])):
+                    iterator = 0
                 currtime = time.time()
             
             input("Continue? ")
@@ -154,14 +164,24 @@ def gameLoop():
             starttime = time.time()
             currtime = time.time()
             iterator = 0
-            while(currtime - starttime < 20 and iterator < len(question["questions"])):
-                print(question["questions"][iterator])
-                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect. "))
-                if(answer != 0):
-                    game.current_team.points += (question["answers"][iterator][answer-1]["points"])
-                    game.prize_pool += (question["answers"][iterator][answer-1]["points"])
-                    print("The current team has " + str(game.current_team.points) + " points")
+            completed = []
+            while(currtime - starttime < 15 and len(completed) != len(question["questions"])):
+                if(iterator not in completed):
+                    print(question["questions"][iterator])
+                    answer = input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. ")
+                    print(answer)
+                    if(answer == ''):
+                        print("Question passed")
+                    else:
+                        completed.append(iterator)
+                        answer = int(answer)
+                        if(answer != 0):
+                            game.current_team.points += (question["answers"][iterator][answer-1]["points"])
+                            game.prize_pool += (question["answers"][iterator][answer-1]["points"])
+                            print("The current team has " + str(game.current_team.points) + " points")
                 iterator += 1
+                if(iterator == len(question["questions"])):
+                    iterator = 0
                 currtime = time.time()
                 
             if(game.prize_pool < 100):
@@ -238,5 +258,5 @@ while 1:
                 points =  default_font.render("- -", True, (255, 255, 0))
                 Window.screen.blit(points, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 300 + x*60), points.get_rect())
     elif(game.in_final_question == True):
-        print("final question stub")
+        ye = 2
     pygame.display.flip()
