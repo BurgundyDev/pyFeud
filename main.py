@@ -115,7 +115,7 @@ def gameLoop():
             game.correct_answers = 0
             game.in_final_question = False
             game.prize_pool = 0
-            answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
+            game.answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
             
         if question["question_type"] == "final":
             print("Detected final question.")
