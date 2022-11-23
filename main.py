@@ -23,6 +23,8 @@ class GameState:
     correct_answers = 0
     current_team = RedTeam
     prize_pool = 0
+    answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
+    current_question_answers = 0
     
 game = GameState()
 
@@ -45,6 +47,11 @@ def gameLoop():
             game.current_question = question["question"]
             print(game.current_id)
             print(game.current_question)
+            game.current_question_answers = len(question["answers"])
+            print(game.current_question_answers)
+            
+            for x in range(game.current_question_answers):
+                game.answers_revealed[x] = False
             
             starting = input("Who starts? ")
             if(starting == "Red"):
@@ -52,7 +59,7 @@ def gameLoop():
             elif(starting == "Blue"):
                 game.current_team = BlueTeam
             
-            while(game.in_second_loop == False and game.correct_answers < 5):
+            while(game.in_second_loop == False and game.correct_answers < game.current_question_answers):
                 answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
                 if(answer == 0):
                     game.current_team.mistakes += 1
@@ -65,7 +72,9 @@ def gameLoop():
                     game.prize_pool += (question["answers"][answer-1]["points"] * question["multiplier"])
                     game.current_team.points += (question["answers"][answer-1]["points"] * question["multiplier"])
                     print("The current team has " + str(game.current_team.points) + " points")
+                    game.answers_revealed[answer-1] = True
                     game.correct_answers += 1
+                    print(game.answers_revealed)
             
             # Second game loop, triggers when the first team get 
             if(game.in_second_loop == True):
@@ -74,7 +83,7 @@ def gameLoop():
                 elif(game.current_team == BlueTeam):
                     game.current_team = RedTeam
                 game.current_team.points += game.prize_pool
-                while(game.current_team.mistakes < 1 and game.correct_answers < 5):
+                while(game.current_team.mistakes < 1 and game.correct_answers < game.current_question_answers):
                     answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
                     if(answer == 0):
                         game.current_team.mistakes += 1
@@ -89,8 +98,14 @@ def gameLoop():
                         game.prize_pool += (question["answers"][answer-1]["points"] * question["multiplier"])
                         game.current_team.points += (question["answers"][answer-1]["points"] * question["multiplier"])
                         print("The current team has " + str(game.current_team.points) + " points")
+                        game.answers_revealed[answer-1] = True
                         game.correct_answers += 1
-            game.reveal_all = True
+                        print(game.answers_revealed)
+                        
+            for x in game.answers_revealed:
+                if(x == False):
+                    input("Show next answer? ")
+                    x = True
             
             input("Proceed? ")
             # Cleanup
@@ -98,9 +113,9 @@ def gameLoop():
             BlueTeam.mistakes = 0
             game.in_second_loop = False
             game.correct_answers = 0
-            game.reveal_all = False
             game.in_final_question = False
             game.prize_pool = 0
+            answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
             
         if question["question_type"] == "final":
             print("Detected final question.")
