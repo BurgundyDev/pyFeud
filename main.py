@@ -13,7 +13,8 @@ BlueTeam = Team()
 
 class GameState:
     current_id = 0
-    current_question = ""
+    current_question = None
+    current_question_text = ""
     in_second_loop = False
     reveal_all = False
     reveal_right = False
@@ -44,9 +45,10 @@ def gameLoop():
         if question["question_type"] == "basic":
             print("Detected basic question.")
             game.current_id = question["question_id"]
-            game.current_question = question["question"]
+            game.current_question = question
+            game.current_question_text = question["question"]
             print(game.current_id)
-            print(game.current_question)
+            print(game.current_question_text)
             game.current_question_answers = len(question["answers"])
             print(game.current_question_answers)
             
@@ -120,10 +122,10 @@ def gameLoop():
         if question["question_type"] == "final":
             print("Detected final question.")
             game.current_id = question["question_id"]
-            game.current_question = question["question"]
+            game.current_question_text = question["question"]
             game.in_final_question = True
             print(game.current_id)
-            print(game.current_question)
+            print(game.current_question_text)
             
             starting = input("Who starts? ")
             if(starting == "Red"):
@@ -183,7 +185,7 @@ while 1:
     Window.screen.fill((0, 0, 0))
     
     if(game.in_final_question == False):
-        text_question = default_font.render(game.current_question, True, (255, 255, 0))
+        text_question = default_font.render(game.current_question_text, True, (255, 255, 0))
         Window.screen.blit(text_question, ((Window.windowWidth/2 - text_question.get_rect().width/2), 100), text_question.get_rect())
         
         text_Red_points = default_font.render(str(RedTeam.points), True, (255, 255, 0))
@@ -193,7 +195,17 @@ while 1:
         
         text_sum = default_font.render(str(game.prize_pool), True, (255, 255, 0))
         text_sum_title = default_font.render("TOTAL", True, (255, 255, 0))
-        Window.screen.blit(text_sum_title, (Window.windowWidth/2 + text_sum_title.get_rect().width, 720), text_sum_title.get_rect())
-        Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 720), text_sum.get_rect())
+        Window.screen.blit(text_sum_title, (Window.windowWidth/2 + text_sum_title.get_rect().width, 860), text_sum_title.get_rect())
+        Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 860), text_sum.get_rect())
+        
+        for x in range(game.current_question_answers):
+            answer_number = default_font.render(str(x+1), True, (255, 255, 0))
+            Window.screen.blit(answer_number, (400, 400 + x*60), answer_number.get_rect())
+            if(game.answers_revealed[x] == True):
+                answer =  default_font.render(game.current_question["answers"][x]["answer"], True, (255, 255, 0))
+                Window.screen.blit(answer, (500, 400 + x*60), answer.get_rect())
+            else:
+                answer =  default_font.render("- - - - -", True, (255, 255, 0))
+                Window.screen.blit(answer, (500, 400 + x*60), answer.get_rect())
     
     pygame.display.flip()
