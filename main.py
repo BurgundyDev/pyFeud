@@ -18,7 +18,6 @@ class GameState:
     current_question = None
     current_question_text = ""
     in_second_loop = False
-    reveal_all = False
     reveal_right = False
     reveal_left = False
     timer_started = False
@@ -27,7 +26,15 @@ class GameState:
     current_team = RedTeam
     prize_pool = 0
     answers_revealed = [False, False, False, False, False, False, False, False, False, False, False, False, False]
+    final_answers_one = [0, 0, 0, 0, 0]
+    final_answers_two = [0, 0, 0, 0, 0]
+    final_started_one = False
+    final_started_two = False
+    final_complete_one = False
+    final_complete_two = False
     current_question_answers = 0
+    start_time = time.time()
+    current_time = time.time()
     over = False
     
 game = GameState()
@@ -107,10 +114,10 @@ def gameLoop():
                         game.correct_answers += 1
                         print(game.answers_revealed)
                         
-            for x in game.answers_revealed:
-                if(x == False):
+            for x in range(game.current_question_answers):
+                if(game.answers_revealed[x] == False):
                     input("Show next answer? ")
-                    x = True
+                    game.answers_revealed[x] = True
             
             input("Proceed? ")
             # Cleanup
@@ -133,14 +140,15 @@ def gameLoop():
             
             if(RedTeam.points > BlueTeam.points):
                 game.current_team = RedTeam
-            else:
+            elif(RedTeam.points < BlueTeam.points):
                 game.current_team = BlueTeam
             
-            starttime = time.time()
-            currtime = time.time()
+            game.start_time = time.time()
+            game.current_time = time.time()
+            game.final_started_one = True
             iterator = 0
             completed = []
-            while(currtime - starttime < 15 and len(completed) != len(question["questions"])):
+            while(game.current_time - game.start_time < 15 and len(completed) != len(question["questions"])):
                 if(iterator not in completed):
                     print(question["questions"][iterator])
                     answer = input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. ")
@@ -150,6 +158,7 @@ def gameLoop():
                     else:
                         completed.append(iterator)
                         answer = int(answer)
+                        game.final_answers_one[iterator] = answer
                         if(answer != 0):
                             game.current_team.points += (question["answers"][iterator][answer-1]["points"])
                             game.prize_pool += (question["answers"][iterator][answer-1]["points"])
@@ -157,15 +166,17 @@ def gameLoop():
                 iterator += 1
                 if(iterator == len(question["questions"])):
                     iterator = 0
-                currtime = time.time()
-            
+                game.current_time = time.time()
+            input("Show answers? ")
+            game.final_complete_one = True
             input("Continue? ")
             
-            starttime = time.time()
-            currtime = time.time()
+            game.start_time = time.time()
+            game.current_time = time.time()
+            game.final_started_two = True
             iterator = 0
             completed = []
-            while(currtime - starttime < 15 and len(completed) != len(question["questions"])):
+            while(game.current_time - game.start_time < 20 and len(completed) != len(question["questions"])):
                 if(iterator not in completed):
                     print(question["questions"][iterator])
                     answer = input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. ")
@@ -175,6 +186,7 @@ def gameLoop():
                     else:
                         completed.append(iterator)
                         answer = int(answer)
+                        game.final_answers_two[iterator] = answer
                         if(answer != 0):
                             game.current_team.points += (question["answers"][iterator][answer-1]["points"])
                             game.prize_pool += (question["answers"][iterator][answer-1]["points"])
@@ -182,7 +194,11 @@ def gameLoop():
                 iterator += 1
                 if(iterator == len(question["questions"])):
                     iterator = 0
-                currtime = time.time()
+                game.current_time = time.time()
+            
+            input("Show answers? ")
+            game.final_complete_two = True
+            input("Continue to end screen? ")
                 
             if(game.prize_pool < 100):
                 print(f"The {game.current_team.name} lost the final round!")
@@ -194,6 +210,7 @@ def gameLoop():
                 print(game.current_team.points)
                 game.over = True
                 
+
 threading.Thread(target=gameLoop, daemon=True).start()
 
 pygame.init()
@@ -215,16 +232,23 @@ while 1:
     Window.screen.fill((0, 0, 0))
     
     if(game.over == True):
-        print("game over lul")
-        sys.exit()
+        end_name = default_font.render(game.current_team.name, True, (255, 255, 0))
+        Window.screen.blit(end_name, ((Window.windowWidth/2 - end_name.get_rect().width/2), 100), end_name.get_rect())
+        end_font = pygame.font.Font("dot_matrix/DOTMATRI.TTF", 455)
+        end_score = end_font.render(str(game.current_team.points), True, (255, 255, 0))
+        Window.screen.blit(end_score, ((Window.windowWidth/2 - end_score.get_rect().width/2), 400), end_score.get_rect())
     elif(game.in_final_question == False):
         text_question = default_font.render(game.current_question_text, True, (255, 255, 0))
         Window.screen.blit(text_question, ((Window.windowWidth/2 - text_question.get_rect().width/2), 100), text_question.get_rect())
         
         text_Red_points = default_font.render(str(RedTeam.points), True, (255, 255, 0))
+        text_Red_name = default_font.render(RedTeam.name, True, (255, 255, 0))
         text_Blue_points = default_font.render(str(BlueTeam.points), True, (255, 255, 0))
+        text_Blue_name = default_font.render(BlueTeam.name, True, (255, 255, 0))
         Window.screen.blit(text_Red_points, (20, 900), text_Red_points.get_rect())
         Window.screen.blit(text_Blue_points, (Window.windowWidth - 20 - text_Blue_points.get_rect().width, 900), text_Blue_points.get_rect())
+        Window.screen.blit(text_Red_name, (20, 840), text_Red_name.get_rect())
+        Window.screen.blit(text_Blue_name, (Window.windowWidth - 20 - text_Blue_name.get_rect().width, 840), text_Blue_name.get_rect())
         
         text_sum = default_font.render(str(game.prize_pool), True, (255, 255, 0))
         text_sum_title = default_font.render("TOTAL", True, (255, 255, 0))
@@ -258,5 +282,57 @@ while 1:
                 points =  default_font.render("- -", True, (255, 255, 0))
                 Window.screen.blit(points, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 300 + x*60), points.get_rect())
     elif(game.in_final_question == True):
-        ye = 2
+        text_question = default_font.render("FINALE", True, (255, 255, 0))
+        Window.screen.blit(text_question, ((Window.windowWidth/2 - text_question.get_rect().width/2), 100), text_question.get_rect())
+        
+        if(game.final_started_one and game.final_complete_one == False):
+            timer = default_font.render(str(15 - (game.current_time - game.start_time)), True, (255, 255, 0))
+            Window.screen.blit(timer, (200, 800), timer.get_rect())
+        
+        if(game.final_complete_two):
+            text_sum = default_font.render(str(game.prize_pool), True, (255, 255, 0))
+            text_sum_title = default_font.render("TOTAL", True, (255, 255, 0))
+            Window.screen.blit(text_sum_title, (Window.windowWidth/2 + text_sum_title.get_rect().width, 860), text_sum_title.get_rect())
+            Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 860), text_sum.get_rect())
+        else:
+            text_sum = default_font.render("- -", True, (255, 255, 0))
+            text_sum_title = default_font.render("TOTAL", True, (255, 255, 0))
+            Window.screen.blit(text_sum_title, (Window.windowWidth/2 + text_sum_title.get_rect().width, 860), text_sum_title.get_rect())
+            Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 860), text_sum.get_rect())
+        
+        for x in range(5):
+            if(game.final_complete_one):
+                if(game.final_answers_one[x] == 0):
+                    answer =  default_font.render("N/A", True, (255, 255, 0))
+                    Window.screen.blit(answer, (Window.windowWidth/2 - 600, 300 + x*60), answer.get_rect())
+                    points = default_font.render("- -", True, (255, 255, 0))
+                    Window.screen.blit(points, (Window.windowWidth/2 - 120, 300 + x*60), points.get_rect())
+                else:
+                    answer =  default_font.render(game.current_question["answers"][x][game.final_answers_one[x]-1]["answer"], True, (255, 255, 0))
+                    Window.screen.blit(answer, (Window.windowWidth/2 - 600, 300 + x*60), answer.get_rect())
+                    points = default_font.render(str(game.current_question["answers"][x][game.final_answers_one[x]-1]["points"]), True, (255, 255, 0))
+                    Window.screen.blit(points, (Window.windowWidth/2 - 120, 300 + x*60), points.get_rect())
+            else:
+                answer =  default_font.render("- - - - -", True, (255, 255, 0))
+                Window.screen.blit(answer, (Window.windowWidth/2 - 600, 300 + x*60), answer.get_rect())
+                points = default_font.render("- -", True, (255, 255, 0))
+                Window.screen.blit(points, (Window.windowWidth/2 - 120, 300 + x*60), points.get_rect())
+        
+        for x in range(5):
+            if(game.final_complete_two):
+                if(game.final_answers_two[x] == 0):
+                    answer =  default_font.render("N/A", True, (255, 255, 0))
+                    Window.screen.blit(answer, (Window.windowWidth/2 + 600 - answer.get_rect().width, 300 + x*60), answer.get_rect())
+                    points = default_font.render("- -", True, (255, 255, 0))
+                    Window.screen.blit(points, (Window.windowWidth/2 + 120 - points.get_rect().width, 300 + x*60), points.get_rect())
+                else:
+                    answer =  default_font.render(game.current_question["answers"][x][game.final_answers_two[x]-1]["answer"], True, (255, 255, 0))
+                    Window.screen.blit(answer, (Window.windowWidth/2 + 600 - answer.get_rect().width, 300 + x*60), answer.get_rect())
+                    points = default_font.render(str(game.current_question["answers"][x][game.final_answers_two[x]-1]["points"]), True, (255, 255, 0))
+                    Window.screen.blit(points, (Window.windowWidth/2 + 120 - points.get_rect().width, 300 + x*60), points.get_rect())
+            else:
+                answer =  default_font.render("- - - - -", True, (255, 255, 0))
+                Window.screen.blit(answer, (Window.windowWidth/2 + 600 - answer.get_rect().width, 300 + x*60), answer.get_rect())
+                points = default_font.render("- -", True, (255, 255, 0))
+                Window.screen.blit(points, (Window.windowWidth/2 + 120 - points.get_rect().width, 300 + x*60), points.get_rect())
     pygame.display.flip()
