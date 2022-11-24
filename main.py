@@ -66,9 +66,9 @@ def gameLoop():
                 game.answers_revealed[x] = False
             
             starting = input("Who starts? ")
-            if(starting == "Red"):
+            if(starting == "Red" or starting == "red" or starting == RedTeam.name):
                 game.current_team = RedTeam
-            elif(starting == "Blue"):
+            elif(starting == "Blue" or starting == "blue" or starting == BlueTeam.name):
                 game.current_team = BlueTeam
             
             while(game.in_second_loop == False and game.correct_answers < game.current_question_answers):
@@ -80,7 +80,7 @@ def gameLoop():
                         print("Proceeding to other team.")
                         game.current_team.points -= game.prize_pool
                         game.in_second_loop = True
-                else:
+                elif(answer <= game.current_question_answers):
                     game.prize_pool += (question["answers"][answer-1]["points"] * question["multiplier"])
                     game.current_team.points += (question["answers"][answer-1]["points"] * question["multiplier"])
                     print("The current team has " + str(game.current_team.points) + " points")
@@ -95,18 +95,22 @@ def gameLoop():
                 elif(game.current_team == BlueTeam):
                     game.current_team = RedTeam
                 game.current_team.points += game.prize_pool
-                answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
-                if(answer == 0):
-                    game.current_team.mistakes += 1
-                    print("The current team has " + str(game.current_team.mistakes) + " mistakes")
-                    game.current_team.points -= game.prize_pool
-                else:
-                    game.prize_pool += (question["answers"][answer-1]["points"] * question["multiplier"])
-                    game.current_team.points += (question["answers"][answer-1]["points"] * question["multiplier"])
-                    print("The current team has " + str(game.current_team.points) + " points")
-                    game.answers_revealed[answer-1] = True
-                    game.correct_answers += 1
-                    print(game.answers_revealed)
+                unanswered = True
+                while(unanswered):
+                    answer = int(input("Which answer has been input? Type 0 if there was no answer or the answer was incorrect/repeated. "))
+                    if(answer == 0):
+                        game.current_team.mistakes += 1
+                        print("The current team has " + str(game.current_team.mistakes) + " mistakes")
+                        game.current_team.points -= game.prize_pool
+                        unanswered = False
+                    elif(answer <= game.current_question_answers):
+                        game.prize_pool += (question["answers"][answer-1]["points"] * question["multiplier"])
+                        game.current_team.points += (question["answers"][answer-1]["points"] * question["multiplier"])
+                        print("The current team has " + str(game.current_team.points) + " points")
+                        game.answers_revealed[answer-1] = True
+                        game.correct_answers += 1
+                        print(game.answers_revealed)
+                        unanswered = False
                         
             for x in range(game.current_question_answers):
                 if(game.answers_revealed[x] == False):
