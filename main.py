@@ -8,7 +8,7 @@ class Team:
     points = 0
     mistakes = 0
     def __init__(self) -> None:
-        self.name = input("Tame name?: ")
+        self.name = input("Team name?: ")
     
 RedTeam = Team()
 BlueTeam = Team()
@@ -142,6 +142,8 @@ def gameLoop():
                 game.current_team = RedTeam
             elif(RedTeam.points < BlueTeam.points):
                 game.current_team = BlueTeam
+                
+            input("Start finale? ")
             
             game.start_time = time.time()
             game.current_time = time.time()
@@ -286,6 +288,10 @@ while 1:
         Window.screen.blit(text_question, ((Window.windowWidth/2 - text_question.get_rect().width/2), 100), text_question.get_rect())
         
         if(game.final_started_one and game.final_complete_one == False):
+            timer = default_font.render(str(15 - (game.current_time - game.start_time)), True, (255, 255, 0))
+            Window.screen.blit(timer, (200, 800), timer.get_rect())
+            
+        if(game.final_started_two and game.final_complete_two == False):
             timer = default_font.render(str(15 - (game.current_time - game.start_time)), True, (255, 255, 0))
             Window.screen.blit(timer, (200, 800), timer.get_rect())
         
