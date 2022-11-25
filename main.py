@@ -32,6 +32,7 @@ class GameState:
     final_started_two = False
     final_complete_one = False
     final_complete_two = False
+    final_hidden_one = False
     current_question_answers = 0
     start_time = time.time()
     current_time = time.time()
@@ -169,6 +170,8 @@ def gameLoop():
                 game.current_time = time.time()
             input("Show answers? ")
             game.final_complete_one = True
+            input("Hide answers? ")
+            game.final_hidden_one = True
             input("Continue? ")
             
             game.start_time = time.time()
@@ -198,6 +201,7 @@ def gameLoop():
             
             input("Show answers? ")
             game.final_complete_two = True
+            game.final_hidden_one = False
             input("Continue to end screen? ")
                 
             if(game.prize_pool < 100):
@@ -305,7 +309,7 @@ while 1:
             Window.screen.blit(text_sum, (Window.windowWidth/2 + text_sum_title.get_rect().width * 2 + text_sum.get_rect().width, 860), text_sum.get_rect())
         
         for x in range(5):
-            if(game.final_complete_one):
+            if(game.final_complete_one and game.final_hidden_one == False):
                 if(game.final_answers_one[x] == 0):
                     answer =  default_font.render("N/A", True, (255, 255, 0))
                     Window.screen.blit(answer, (Window.windowWidth/2 - 600, 300 + x*60), answer.get_rect())
